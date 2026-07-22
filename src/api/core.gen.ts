@@ -449,6 +449,22 @@ export interface operations {
           };
         };
       };
+      /** @description RATE_LIMITED */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            error: {
+              /** @enum {string} */
+              code: 'RATE_LIMITED';
+              /** @description One human-readable sentence, safe to show a user. */
+              message: string;
+            };
+          };
+        };
+      };
     };
   };
   'auth.login': {
@@ -491,6 +507,22 @@ export interface operations {
               details?: {
                 [key: string]: string[];
               };
+            };
+          };
+        };
+      };
+      /** @description RATE_LIMITED */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            error: {
+              /** @enum {string} */
+              code: 'RATE_LIMITED';
+              /** @description One human-readable sentence, safe to show a user. */
+              message: string;
             };
           };
         };
@@ -729,6 +761,15 @@ export interface operations {
     };
     responses: {
       /** @description `OrderResource` */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['OrderResource'];
+        };
+      };
+      /** @description `OrderResource` */
       201: {
         headers: {
           [name: string]: unknown;
@@ -820,6 +861,22 @@ export interface operations {
                   };
                 };
               };
+        };
+      };
+      /** @description SERVICE_UNAVAILABLE */
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            error: {
+              /** @enum {string} */
+              code: 'SERVICE_UNAVAILABLE';
+              /** @description One human-readable sentence, safe to show a user. */
+              message: string;
+            };
+          };
         };
       };
     };
