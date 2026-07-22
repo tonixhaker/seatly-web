@@ -1,4 +1,6 @@
 import type { Middleware } from 'openapi-fetch';
+import { toast } from 'sonner';
+import { useAuthStore } from '@/stores/auth.store';
 
 export type ApiError = {
   code: string;
@@ -6,18 +8,62 @@ export type ApiError = {
   details?: Record<string, unknown>;
 };
 
-let bearerToken: string | null = null;
+const GENERIC_MESSAGE = 'Something went wrong';
+const SESSION_ENDPOINTS = new Set([
+  '/api/v1/auth/login',
+  '/api/v1/auth/logout',
+]);
+const handledCodes = new Map<string, Set<string>>();
 
-export function setBearerToken(token: string | null): void {
-  bearerToken = token;
+export function handling(...codes: string[]): Middleware[] {
+  return [
+    {
+      onRequest({ id }) {
+        handledCodes.set(id, new Set(codes));
+      },
+    },
+  ];
 }
 
 export const authMiddleware: Middleware = {
   onRequest({ request }) {
-    if (bearerToken !== null) {
-      request.headers.set('Authorization', `Bearer ${bearerToken}`);
+    const { token } = useAuthStore.getState();
+    if (token !== null) {
+      request.headers.set('Authorization', `Bearer ${token}`);
     }
+    request.headers.set('X-Request-Id', crypto.randomUUID());
     return request;
+  },
+  async onResponse({ id, response, schemaPath }) {
+    const handled = handledCodes.get(id);
+    handledCodes.delete(id);
+    if (response.ok) {
+      return;
+    }
+    if (response.status === 401 && !SESSION_ENDPOINTS.has(schemaPath)) {
+      useAuthStore.getState().logout();
+      if (window.location.pathname !== '/login') {
+        window.location.assign(
+          `/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`,
+        );
+      }
+      return;
+    }
+    const error = unwrapApiError(
+      await response
+        .clone()
+        .json()
+        .catch(() => null),
+    );
+    if (error !== null && handled?.has(error.code)) {
+      return;
+    }
+    const useEnvelope =
+      error !== null && (response.status < 500 || response.status === 503);
+    toast.error(useEnvelope ? error.message : GENERIC_MESSAGE);
+  },
+  onError({ id }) {
+    handledCodes.delete(id);
   },
 };
 
