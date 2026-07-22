@@ -18,7 +18,11 @@ import { MyTicketsPage } from '@/pages/storefront/MyTicketsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: { retry: 1, refetchOnWindowFocus: false },
+    queries: {
+      retry: (failureCount, error) =>
+        failureCount < 1 && error instanceof Error,
+      refetchOnWindowFocus: false,
+    },
   },
 });
 
