@@ -81,3 +81,14 @@ export function seatColour(
   }
   return 'held';
 }
+
+export function restSnapshot(
+  seats: readonly { id: number; status: string }[],
+  live: SeatsSnapshot | undefined,
+): SeatsSnapshot {
+  const coreSold = seats.filter((s) => s.status === 'sold').map((s) => s.id);
+  return {
+    held: live?.held ?? [],
+    sold: [...coreSold, ...(live?.sold ?? [])],
+  };
+}

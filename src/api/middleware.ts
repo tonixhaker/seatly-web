@@ -49,6 +49,9 @@ export const authMiddleware: Middleware = {
       }
       return;
     }
+    if (handled?.has('*')) {
+      return;
+    }
     const error = unwrapApiError(
       await response
         .clone()

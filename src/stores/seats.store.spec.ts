@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { seatColour, useSeatsStore } from './seats.store';
+import { restSnapshot, seatColour, useSeatsStore } from './seats.store';
 
 const store = () => useSeatsStore.getState();
 
@@ -107,5 +107,22 @@ describe('seatColour', () => {
     expect(seatColour(4, state, [], 'me')).toBe('held');
     expect(seatColour(3, state, [3], 'me')).toBe('sold');
     expect(seatColour(9, state, [9], 'me')).toBe('free');
+  });
+});
+
+describe('restSnapshot', () => {
+  it('unions core sold with live sold, takes held from live only', () => {
+    const seats = [
+      { id: 1, status: 'sold' },
+      { id: 2, status: 'held' },
+      { id: 3, status: 'available' },
+      { id: 4, status: 'available' },
+    ];
+
+    const merged = restSnapshot(seats, { held: [3], sold: [4] });
+    expect(merged.held).toEqual([3]);
+    expect([...merged.sold].sort()).toEqual([1, 4]);
+
+    expect(restSnapshot(seats, undefined)).toEqual({ held: [], sold: [1] });
   });
 });

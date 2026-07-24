@@ -1,4 +1,7 @@
+import { useLiveSeats } from '@/hooks/useLiveSeats';
+
 export function SeatMapSlot({ eventId }: { eventId: number }) {
+  useLiveSeats(eventId);
   return (
     <div
       data-event-id={eventId}
