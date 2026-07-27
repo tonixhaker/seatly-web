@@ -1,7 +1,7 @@
 import { Link, useParams } from 'react-router';
 import { unwrapApiError } from '@/api/middleware';
-import { SeatMapSlot } from '@/components/events/SeatMapSlot';
 import { LiveUpdatesBanner } from '@/components/realtime/SocketProvider';
+import { SeatMap } from '@/components/seatmap/SeatMap';
 import { useEvent } from '@/hooks/useEvents';
 
 function parseId(raw: string | undefined): number | null {
@@ -49,7 +49,7 @@ export function EventPage() {
       </header>
       <p className="whitespace-pre-line">{event.description}</p>
       <LiveUpdatesBanner />
-      <SeatMapSlot eventId={event.id} />
+      <SeatMap eventId={event.id} />
     </article>
   );
 }

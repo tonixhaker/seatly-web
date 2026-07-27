@@ -63,6 +63,17 @@ These URLs are resolved by the browser, not by the container, so they must be ad
 browser can reach — the published host ports, never internal container hostnames. Changing
 one means rebuilding the image, not restarting it.
 
+## Tests
+
+```bash
+pnpm test                               # Vitest unit specs under src/
+pnpm exec playwright install chromium   # once
+pnpm test:e2e                           # one Playwright smoke test
+```
+
+The smoke test runs against a stack already serving `http://localhost:5173` — `make up`
+in the superproject. It starts no server of its own.
+
 ## Status
 
 Work in progress. The application builds, serves from nginx in its own container and

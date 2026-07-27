@@ -12,3 +12,6 @@ test-files/
 .idea/
 .vscode/
 *.swp
+
+test-results/
+playwright-report/
