@@ -1,6 +1,5 @@
-import { useEffect, type KeyboardEvent, type SVGProps } from 'react';
+import { type KeyboardEvent, type SVGProps } from 'react';
 import { Link } from 'react-router';
-import { toast } from 'sonner';
 import type { components } from '@/api/core.gen';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,8 +10,9 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { useHoldCountdown } from '@/hooks/useHoldCountdown';
-import { useHoldSeat, useReleaseSeat } from '@/hooks/useHolds';
+import { useHoldExpiry, useHoldSeat, useReleaseSeat } from '@/hooks/useHolds';
 import { useLiveSeats } from '@/hooks/useLiveSeats';
+import { formatPrice } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth.store';
 import { useCartStore } from '@/stores/cart.store';
 import {
@@ -47,12 +47,6 @@ const COLOUR_STYLE: Record<SeatColour, SVGProps<SVGCircleElement>> = {
     strokeDasharray: '4 3',
   },
 };
-
-function formatPrice(cents: number, currency: string): string {
-  return new Intl.NumberFormat('en', { style: 'currency', currency }).format(
-    cents / 100,
-  );
-}
 
 function viewBox(seats: readonly Seat[]): string {
   const xs = seats.map((s) => s.x);
@@ -167,24 +161,7 @@ export function SeatMap({ eventId }: { eventId: number }) {
   const sessionId = useCartStore((s) => s.sessionId);
   const hold = useHoldSeat();
   const release = useReleaseSeat();
-  const { mutate: releaseExpired } = useReleaseSeat();
-
-  useEffect(
-    () =>
-      useCartStore.subscribe((state, prev) => {
-        if (!state.expired || prev.expired) return;
-        state.ackExpired();
-        toast('Your hold expired');
-        if (prev.eventId !== null && prev.seatIds.length > 0) {
-          releaseExpired({
-            eventId: prev.eventId,
-            seatIds: prev.seatIds,
-            silent: true,
-          });
-        }
-      }),
-    [releaseExpired],
-  );
+  useHoldExpiry();
 
   if (seats === undefined) {
     return <p className="text-muted-foreground">Loading seats…</p>;

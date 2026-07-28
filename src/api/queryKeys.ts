@@ -7,4 +7,7 @@ export const queryKeys = {
     seats: (id: number) => ['events', 'seats', id] as const,
     liveSeats: (id: number) => ['events', 'live-seats', id] as const,
   },
+  tickets: {
+    mine: () => ['tickets', 'list', 'mine'] as const,
+  },
 };

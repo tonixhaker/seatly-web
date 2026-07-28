@@ -373,6 +373,17 @@ export interface components {
       status: string;
       /** Format: date-time */
       checked_in_at: string | null;
+      event: {
+        id: number;
+        title: string;
+        /** Format: date-time */
+        starts_at: string;
+      };
+      seat: {
+        section: string;
+        row: number;
+        number: number;
+      };
     };
     /** UpdateEventRequest */
     UpdateEventRequest: {

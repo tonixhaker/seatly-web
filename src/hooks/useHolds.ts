@@ -1,4 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
 import { holdSeats, releaseSeats } from '@/api/holds.api';
 import { unwrapApiError } from '@/api/middleware';
@@ -42,4 +43,25 @@ export function useReleaseSeat() {
       for (const id of seatIds) removeSeat(id);
     },
   });
+}
+
+export function useHoldExpiry() {
+  const { mutate: releaseExpired } = useReleaseSeat();
+
+  useEffect(
+    () =>
+      useCartStore.subscribe((state, prev) => {
+        if (!state.expired || prev.expired) return;
+        state.ackExpired();
+        toast('Your hold expired');
+        if (prev.eventId !== null && prev.seatIds.length > 0) {
+          releaseExpired({
+            eventId: prev.eventId,
+            seatIds: prev.seatIds,
+            silent: true,
+          });
+        }
+      }),
+    [releaseExpired],
+  );
 }
