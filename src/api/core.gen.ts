@@ -181,7 +181,8 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    /** List the caller's events in every status */
+    get: operations['organizer.index'];
     put?: never;
     /** Create a draft event */
     post: operations['organizer.store'];
@@ -198,7 +199,8 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    /** Return one of the caller's events in any status, with its venue */
+    get: operations['organizer.show'];
     /** Update a draft event */
     put: operations['organizer.update'];
     post?: never;
@@ -253,6 +255,23 @@ export interface paths {
     put?: never;
     /** Check a ticket in at the door */
     post: operations['organizer.checkIn'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/organizer/venues': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List the venues an event can be held at */
+    get: operations['organizer.venues'];
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -1014,6 +1033,110 @@ export interface operations {
       };
     };
   };
+  'organizer.index': {
+    parameters: {
+      query?: {
+        page?: number | null;
+        per_page?: number | null;
+        starts_from?: string | null;
+        starts_until?: string | null;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Paginated set of `EventResource` */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['EventResource'][];
+            links: {
+              first: string | null;
+              last: string | null;
+              prev: string | null;
+              next: string | null;
+            };
+            meta: {
+              current_page: number;
+              from: number | null;
+              last_page: number;
+              /** @description Generated paginator links. */
+              links: {
+                url: string | null;
+                label: string;
+                active: boolean;
+              }[];
+              /** @description Base path for paginator generated URLs. */
+              path: string | null;
+              /** @description Number of items shown per page. */
+              per_page: number;
+              /** @description Number of the last item in the slice. */
+              to: number | null;
+              /** @description Total number of items being paginated. */
+              total: number;
+            };
+          };
+        };
+      };
+      /** @description UNAUTHENTICATED */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            error: {
+              /** @enum {string} */
+              code: 'UNAUTHENTICATED';
+              /** @description One human-readable sentence, safe to show a user. */
+              message: string;
+            };
+          };
+        };
+      };
+      /** @description FORBIDDEN */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            error: {
+              /** @enum {string} */
+              code: 'FORBIDDEN';
+              /** @description One human-readable sentence, safe to show a user. */
+              message: string;
+            };
+          };
+        };
+      };
+      /** @description VALIDATION_FAILED */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            error: {
+              /** @enum {string} */
+              code: 'VALIDATION_FAILED';
+              /** @description One human-readable sentence, safe to show a user. */
+              message: string;
+              /** @description Omitted entirely when empty. */
+              details?: {
+                [key: string]: string[];
+              };
+            };
+          };
+        };
+      };
+    };
+  };
   'organizer.store': {
     parameters: {
       query?: never;
@@ -1084,6 +1207,76 @@ export interface operations {
               details?: {
                 [key: string]: string[];
               };
+            };
+          };
+        };
+      };
+    };
+  };
+  'organizer.show': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description `EventDetailResource` */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['EventDetailResource'];
+        };
+      };
+      /** @description UNAUTHENTICATED */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            error: {
+              /** @enum {string} */
+              code: 'UNAUTHENTICATED';
+              /** @description One human-readable sentence, safe to show a user. */
+              message: string;
+            };
+          };
+        };
+      };
+      /** @description FORBIDDEN */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            error: {
+              /** @enum {string} */
+              code: 'FORBIDDEN';
+              /** @description One human-readable sentence, safe to show a user. */
+              message: string;
+            };
+          };
+        };
+      };
+      /** @description NOT_FOUND */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            error: {
+              /** @enum {string} */
+              code: 'NOT_FOUND';
+              /** @description One human-readable sentence, safe to show a user. */
+              message: string;
             };
           };
         };
@@ -1487,6 +1680,58 @@ export interface operations {
               details?: {
                 [key: string]: string[];
               };
+            };
+          };
+        };
+      };
+    };
+  };
+  'organizer.venues': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Array of `VenueResource` */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['VenueResource'][];
+        };
+      };
+      /** @description UNAUTHENTICATED */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            error: {
+              /** @enum {string} */
+              code: 'UNAUTHENTICATED';
+              /** @description One human-readable sentence, safe to show a user. */
+              message: string;
+            };
+          };
+        };
+      };
+      /** @description FORBIDDEN */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            error: {
+              /** @enum {string} */
+              code: 'FORBIDDEN';
+              /** @description One human-readable sentence, safe to show a user. */
+              message: string;
             };
           };
         };
