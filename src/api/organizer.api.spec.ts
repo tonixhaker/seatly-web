@@ -10,7 +10,7 @@ const fetchMock = vi.hoisted(() => {
 
 vi.mock('sonner', () => ({ toast: { error: vi.fn() } }));
 
-const { createEvent, updateEvent, publishEvent } =
+const { createEvent, updateEvent, publishEvent, getEventStats, checkIn } =
   await import('./organizer.api');
 
 const body = { venue_id: 1, title: 'Gala', starts_at: '2026-10-01T19:00:00Z' };
@@ -53,5 +53,41 @@ describe('publishEvent', () => {
       error: { code: 'INVALID_STATE_TRANSITION' },
     });
     expect(toast.error).toHaveBeenCalledWith('INVALID_STATE_TRANSITION');
+  });
+});
+
+describe('checkIn', () => {
+  it('rejects ALREADY_CHECKED_IN with the envelope and no toast', async () => {
+    reply(409, 'ALREADY_CHECKED_IN');
+    await expect(checkIn('qr-1')).rejects.toMatchObject({
+      error: { code: 'ALREADY_CHECKED_IN' },
+    });
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  it('rejects NOT_FOUND with no toast', async () => {
+    reply(404, 'NOT_FOUND');
+    await expect(checkIn('qr-1')).rejects.toMatchObject({
+      error: { code: 'NOT_FOUND' },
+    });
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  it('toasts the envelope message on VALIDATION_FAILED', async () => {
+    reply(422, 'VALIDATION_FAILED');
+    await expect(checkIn('qr-1')).rejects.toMatchObject({
+      error: { code: 'VALIDATION_FAILED' },
+    });
+    expect(toast.error).toHaveBeenCalledWith('VALIDATION_FAILED');
+  });
+});
+
+describe('getEventStats', () => {
+  it('rejects NOT_FOUND with no toast', async () => {
+    reply(404, 'NOT_FOUND');
+    await expect(getEventStats(7)).rejects.toMatchObject({
+      error: { code: 'NOT_FOUND' },
+    });
+    expect(toast.error).not.toHaveBeenCalled();
   });
 });

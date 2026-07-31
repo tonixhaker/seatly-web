@@ -66,3 +66,21 @@ export async function publishEvent(id: number) {
   if (error) throw error;
   return data;
 }
+
+export async function getEventStats(id: number) {
+  const { data, error } = await coreClient.GET(
+    '/api/v1/organizer/events/{id}/stats',
+    { params: { path: { id } }, middleware: handling('NOT_FOUND') },
+  );
+  if (error) throw error;
+  return data;
+}
+
+export async function checkIn(qr_code: string) {
+  const { data, error } = await coreClient.POST('/api/v1/organizer/check-in', {
+    body: { qr_code },
+    middleware: handling('ALREADY_CHECKED_IN', 'NOT_FOUND'),
+  });
+  if (error) throw error;
+  return data;
+}

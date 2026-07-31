@@ -6,7 +6,9 @@ import {
 } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 import {
+  checkIn,
   createEvent,
+  getEventStats,
   getOrganizerEvent,
   listOrganizerEvents,
   listVenues,
@@ -30,6 +32,19 @@ export function useOrganizerEvent(id: number | null) {
     queryFn: () => getOrganizerEvent(id ?? 0),
     enabled: id !== null,
   });
+}
+
+export function useEventStats(id: number | null) {
+  return useQuery({
+    queryKey: queryKeys.organizerEvents.stats(id ?? 0),
+    queryFn: () => getEventStats(id ?? 0),
+    enabled: id !== null,
+    refetchInterval: (query) => (query.state.error ? false : 10_000),
+  });
+}
+
+export function useCheckIn() {
+  return useMutation({ mutationFn: checkIn });
 }
 
 export function useVenues() {
