@@ -14,6 +14,7 @@ export const queryKeys = {
     list: (filters: OrganizerEventFilters) =>
       ['organizer-events', 'list', filters] as const,
     detail: (id: number) => ['organizer-events', 'detail', id] as const,
+    stats: (id: number) => ['organizer-events', 'stats', id] as const,
   },
   venues: {
     list: () => ['venues', 'list'] as const,
