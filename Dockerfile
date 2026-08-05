@@ -1,7 +1,4 @@
-FROM node:22.23.2-alpine AS builder
-
-ARG VITE_API_BASE_URL=http://localhost:8000
-ARG VITE_REALTIME_BASE_URL=http://localhost:3000
+FROM node:22.23.2-alpine AS test
 
 RUN npm install -g pnpm@10.29.3
 
@@ -10,6 +7,11 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 
 RUN pnpm install --frozen-lockfile
+
+FROM test AS builder
+
+ARG VITE_API_BASE_URL=http://localhost:8000
+ARG VITE_REALTIME_BASE_URL=http://localhost:3000
 
 COPY . .
 
