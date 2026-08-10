@@ -30,6 +30,9 @@ jobs:
       - name: Check style and lint without rewriting files
         run: pnpm lint
 
+      - name: Run the unit tests
+        run: pnpm test
+
       - name: Build the production bundle
         run: pnpm build
 
