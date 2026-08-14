@@ -16,9 +16,10 @@ event management, a sales dashboard and ticket check-in.
 ## API client
 
 Generated from the `seatly-api` OpenAPI spec by `openapi-typescript`. Run `pnpm gen:api`
-to regenerate; the output is committed and not hand-edited.
+to regenerate; it reads the spec at `SEATLY_OPENAPI_SPEC`, defaulting to a sibling
+`../seatly-api/docs/openapi.json` checkout. The output is committed and not hand-edited.
 
-## Running it
+## Running standalone
 
 Needs Node 22, pnpm, and both backends running —
 [seatly-api](https://github.com/tonixhaker/seatly-api) on 8000 and
@@ -71,14 +72,10 @@ pnpm exec playwright install chromium   # once
 pnpm test:e2e                           # one Playwright smoke test
 ```
 
-The smoke test runs against a stack already serving `http://localhost:5173` — `make up`
-in the superproject. It starts no server of its own.
-
-## Status
-
-Work in progress. The application builds, serves from nginx in its own container and
-answers `/health`; routing, pages and state are not implemented yet.
+The smoke test starts no server of its own. It runs against the app already serving
+`http://localhost:5173` — `pnpm dev` or the Docker image — with a seeded seatly-api and a
+seatly-realtime reachable at the configured URLs.
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE).
