@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import type { components } from '@/api/core.gen';
 
 export type User = components['schemas']['UserResource'];
@@ -16,11 +16,15 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       token: null,
       user: null,
-      login: (token, user) => set({ token, user }),
+      login: (token, user) => {
+        localStorage.removeItem('seatly-auth');
+        set({ token, user });
+      },
       logout: () => set({ token: null, user: null }),
     }),
     {
       name: 'seatly-auth',
+      storage: createJSONStorage(() => sessionStorage),
       partialize: ({ token, user }) => ({ token, user }),
     },
   ),
