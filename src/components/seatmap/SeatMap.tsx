@@ -156,9 +156,7 @@ function CartPanel({ eventId, seats }: { eventId: number; seats: Seat[] }) {
 export function SeatMap({ eventId }: { eventId: number }) {
   const { connected, seats } = useLiveSeats(eventId);
   const status = useSeatsStore((s) => s.status);
-  const holder = useSeatsStore((s) => s.holder);
   const cartSeatIds = useCartStore((s) => s.seatIds);
-  const sessionId = useCartStore((s) => s.sessionId);
   const hold = useHoldSeat();
   const release = useReleaseSeat();
   useHoldExpiry();
@@ -195,12 +193,7 @@ export function SeatMap({ eventId }: { eventId: number }) {
         >
           <SoldPattern />
           {seats.map((seat) => {
-            const colour = seatColour(
-              seat.id,
-              { status, holder },
-              cartSeatIds,
-              sessionId,
-            );
+            const colour = seatColour(seat.id, { status }, cartSeatIds);
             const disabled =
               !connected || colour === 'held' || colour === 'sold';
             return (
