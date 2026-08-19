@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router';
 import * as authApi from '@/api/auth.api';
 import { useAuthStore, type User } from '@/stores/auth.store';
+import { useCartStore } from '@/stores/cart.store';
 
 function homeFor(role: string): string {
   return role === 'organizer' ? '/organizer/events' : '/';
@@ -47,6 +48,7 @@ export function useLogout() {
     mutationFn: authApi.logout,
     onSettled: () => {
       useAuthStore.getState().logout();
+      useCartStore.getState().resetSession();
       queryClient.clear();
       navigate('/', { replace: true });
     },
