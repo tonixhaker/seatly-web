@@ -22,6 +22,7 @@ const { fetchMock, captured } = vi.hoisted(() => {
     },
   };
   vi.stubGlobal('sessionStorage', storage);
+  vi.stubGlobal('localStorage', storage);
   vi.stubEnv('VITE_REALTIME_BASE_URL', 'http://realtime.test');
   const fetchMock = vi.fn<typeof fetch>(
     async () => new Response(null, { status: 204 }),
