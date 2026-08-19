@@ -12,6 +12,7 @@ type CartState = {
   addSeat: (eventId: number, seatId: number, now: number) => void;
   removeSeat: (seatId: number) => void;
   clear: () => void;
+  resetSession: () => void;
   tick: (now: number) => void;
   ackExpired: () => void;
 };
@@ -38,6 +39,8 @@ export const useCartStore = create<CartState>()(
         set(seatIds.length === 0 ? emptyCart : { seatIds });
       },
       clear: () => set(emptyCart),
+      resetSession: () =>
+        set({ sessionId: crypto.randomUUID(), ...emptyCart, expired: false }),
       tick: (now) => {
         const { expiresAt } = get();
         if (expiresAt !== null && now >= expiresAt) {

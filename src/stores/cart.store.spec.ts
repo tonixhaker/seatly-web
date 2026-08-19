@@ -57,6 +57,37 @@ describe('cartStore session id', () => {
   });
 });
 
+describe('cartStore resetSession', () => {
+  it('rotates the session id and empties the cart while clear keeps the id', async () => {
+    const { useCartStore } = await load(storage);
+    const cart = () => useCartStore.getState();
+    const persisted = () =>
+      JSON.parse(storage.getItem('seatly-cart') ?? '{}').state;
+    const before = cart().sessionId;
+
+    cart().addSeat(1, 10, T);
+    cart().clear();
+    expect(cart().sessionId).toBe(before);
+    expect(persisted().sessionId).toBe(before);
+
+    cart().addSeat(1, 10, T);
+    cart().tick(T + 600_000);
+    cart().addSeat(1, 11, T + 600_000);
+    expect(cart().expired).toBe(true);
+    expect(cart().seatIds).toEqual([11]);
+
+    cart().resetSession();
+
+    expect(cart().sessionId).toMatch(UUID);
+    expect(cart().sessionId).not.toBe(before);
+    expect(cart().seatIds).toEqual([]);
+    expect(cart().eventId).toBeNull();
+    expect(cart().expiresAt).toBeNull();
+    expect(cart().expired).toBe(false);
+    expect(persisted().sessionId).toBe(cart().sessionId);
+  });
+});
+
 describe('cartStore seats', () => {
   it('ignores duplicates, keeps expiresAt while seats remain, clears it when empty', async () => {
     const { useCartStore } = await load(storage);
