@@ -11,7 +11,7 @@
     "preview": "vite preview",
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write \"src/**/*.{ts,tsx}\" \"*.ts\"",
-    "gen:api": "echo 'gen:api is wired in task 13: openapi-typescript over the seatly-api OpenAPI spec' >&2 && exit 1"
+    "gen:api": "openapi-typescript \"${SEATLY_OPENAPI_SPEC:-../seatly-api/docs/openapi.json}\" -o src/api/core.gen.ts && prettier --write src/api/core.gen.ts"
   },
   "dependencies": {
     "openapi-fetch": "0.17.0",
