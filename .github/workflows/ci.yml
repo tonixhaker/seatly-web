@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Lint, build and contract
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: 22.23.2
+
+      - name: Install pnpm
+        run: npm install -g pnpm@10.29.3
+
+      - name: Install dependencies from the lockfile
+        run: pnpm install --frozen-lockfile
+
+      - name: Check style and lint without rewriting files
+        run: pnpm lint
+
+      - name: Build the production bundle
+        run: pnpm build
+
+      - name: Regenerate the API client from the seatly-api contract
+        env:
+          SEATLY_OPENAPI_SPEC: https://raw.githubusercontent.com/tonixhaker/seatly-api/staging/docs/openapi.json
+        run: pnpm gen:api
+
+      - name: Fail if the generated client drifted from the contract
+        run: git diff --exit-code src/api/core.gen.ts
+
+  image:
+    name: Docker image
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Build the image
+        run: docker build -t seatly-web:ci .
+
+      - name: Start the container
+        run: docker run -d --name seatly-web-ci -p 5173:5173 seatly-web:ci
+
+      - name: Probe the health route
+        run: curl --retry 20 --retry-delay 2 --retry-all-errors -fsS http://localhost:5173/health
+
+      - name: Require a client-side route to fall back to the application shell
+        run: |
+          body=$(curl --retry 20 --retry-delay 2 --retry-all-errors -fsS http://localhost:5173/events/42/seats)
+          echo "$body" | grep -q '<title>Seatly</title>'
+
+      - name: Require a real bundle asset to be served as JavaScript
+        run: |
+          asset=$(curl -fsS http://localhost:5173/ | grep -oE '/assets/[^"]+\.js' | head -1)
+          echo "asset is $asset"
+          test -n "$asset"
+          type=$(curl -fsS -o /dev/null -w '%{content_type}' "http://localhost:5173$asset")
+          echo "content type is $type"
+          echo "$type" | grep -q javascript
+
+      - name: Require a missing bundle asset to return 404 rather than the shell
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:5173/assets/missing-deadbeef.js)
+          echo "missing asset returned $code"
+          test "$code" = "404"
+
+      - name: Require the image healthcheck to report healthy
+        run: |
+          for i in $(seq 1 20); do
+            health=$(docker inspect -f '{{.State.Health.Status}}' seatly-web-ci)
+            if [ "$health" != "starting" ]; then break; fi
+            sleep 3
+          done
+          echo "healthcheck reported $health"
+          test "$health" = "healthy"
+
+      - name: Require the container to run as a non-root user
+        run: test "$(docker exec seatly-web-ci id -un)" = "nginx"
+
+      - name: Require no build toolchain in the image
+        run: |
+          ! docker exec seatly-web-ci sh -c 'command -v node || command -v pnpm || command -v npm'
+
+      - name: Require the web root to hold the built bundle and nothing else
+        run: |
+          docker exec seatly-web-ci sh -c 'test ! -d /usr/share/nginx/html/node_modules && test ! -d /usr/share/nginx/html/src'
+          test "$(docker exec seatly-web-ci sh -c 'ls /usr/share/nginx/html' | sort | tr '\n' ' ')" = "assets index.html "
+
+      - name: Stop the container
+        if: always()
+        run: docker rm -f seatly-web-ci
