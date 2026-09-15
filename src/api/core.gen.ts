@@ -1224,6 +1224,22 @@ export interface operations {
           };
         };
       };
+      /** @description INVALID_SEAT_MAP_TEMPLATE */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            error: {
+              /** @enum {string} */
+              code: 'INVALID_SEAT_MAP_TEMPLATE';
+              /** @description One human-readable sentence, safe to show a user. */
+              message: string;
+            };
+          };
+        };
+      };
     };
   };
   'organizer.stats': {
